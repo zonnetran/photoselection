@@ -348,6 +348,8 @@ def admin_get_recent_selections():
     return jsonify({'success': True, 'selections': recent_selections})
 
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get('PORT', 8080))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=False)
+
+# For Vercel, also add this:
+# This is the WSGI entry point
+application = app

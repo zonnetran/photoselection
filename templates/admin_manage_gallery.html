@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog me-2"></i>Manage {{ gallery_name.replace('_', ' ').title() }}</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+</div>
+
+    {% if images %}
+        <div class="row">
+            {% for image in images %}
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card">
+                    <img src="{{ url_for('serve_image', gallery_name=gallery_name, filename=image) }}" 
+                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ image }}">
+                    <div class="card-body p-2">
+                        <h6 class="card-title small">{{ image }}</h6>
+                        <button class="btn btn-sm btn-danger w-100" 
+                                onclick="deleteImage('{{ image }}')">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No images in this gallery yet.
+        </div>
+    {% endif %}
+
+    <div id="deleteMessage" class="mt-3"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('admin-page');
+});
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteImage(filename) {
+    if (!confirm(`Are you sure you want to delete "${filename}"? This cannot be undone.`)) {
+        return;
+    }
+    
+    fetch(`/admin/delete_image/{{ gallery_name }}/${filename}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        const messageDiv = document.getElementById('deleteMessage');
+        if (data.success) {
+            messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+        }
+    })
+    .catch(error => {
+        document.getElementById('deleteMessage').innerHTML = 
+            '<div class="alert alert-danger">Delete failed. Please try again.</div>';
+    });
+}
+</script>
+{% endblock %}

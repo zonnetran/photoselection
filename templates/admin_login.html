@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+.admin-login-btn {
+    transition: all 0.2s ease !important;
+}
+
+.admin-login-btn:hover {
+    box-shadow: 6px 6px 0 #000 !important;
+    transform: translate(2px, 2px) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center" style="margin-top: 2.5rem;">
+    <div class="col-md-6">
+        <div class="neo-brutalist bg-white p-4">
+            <h3 class="text-3xl mb-0 text-center" style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 3px; font-size: 4rem;">
+                <i class="fas fa-shield-alt me-2"></i>Admin Access
+            </h3>
+            <p class="text-center mb-4">Gallery Management Portal</p>
+            
+            {% if error %}
+            <div class="neo-brutalist bg-red-500 text-white p-4 mb-4">
+                <span class="text-lg">{{ error }}</span>
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="{{ url_for('admin_authenticate') }}">
+                <div class="mb-3">
+                    <label for="password" class="form-label text-lg font-bold">Admin Password</label>
+                    <input type="password" class="neo-brutalist w-100 p-3 text-lg bg-white border-4 border-black focus:outline-none" id="password" name="password" required placeholder="Enter admin password...">
+                </div>
+                <button type="submit" class="neo-brutalist bg-warning text-black text-lg font-bold py-3 px-6 w-100 admin-login-btn" style="font-family: 'Roboto Mono', monospace; font-size: 1 rem; background-color: #facc14 !important;">Access Admin Panel</button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('index') }}" class="text-decoration-none text-black">← Back to galleries</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

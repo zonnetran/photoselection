@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo Brutalist Component Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/neo-brutalist.css') }}">
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+        <h1 class="text-4xl md:text-5xl mb-6 md:mb-8 text-center">Neo Brutalist Component Library</h1>
+        
+        <!-- Usage Examples -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Button Example -->
+            <div class="neo-brutalist bg-white p-4">
+                <h3 class="text-xl mb-4">Button</h3>
+                <div id="button-demo"></div>
+                <pre class="text-xs mt-2 bg-gray-100 p-2 rounded"><code>NeoBrutalist.create('Button', '#container', {
+  text: 'Click Me',
+  color: 'blue-500',
+  onClick: () => alert('Clicked!')
+});</code></pre>
+            </div>
+
+            <!-- Card Example -->
+            <div class="neo-brutalist bg-white p-4">
+                <h3 class="text-xl mb-4">Card</h3>
+                <div id="card-demo"></div>
+                <pre class="text-xs mt-2 bg-gray-100 p-2 rounded"><code>NeoBrutalist.create('Card', '#container', {
+  title: 'My Card',
+  content: 'Card content here'
+});</code></pre>
+            </div>
+
+            <!-- Accordion Example -->
+            <div class="neo-brutalist bg-white p-4">
+                <h3 class="text-xl mb-4">Accordion</h3>
+                <div id="accordion-demo"></div>
+                <pre class="text-xs mt-2 bg-gray-100 p-2 rounded"><code>NeoBrutalist.create('Accordion', '#container', {
+  items: [
+    {title: 'Section 1', content: 'Content 1'},
+    {title: 'Section 2', content: 'Content 2'}
+  ]
+});</code></pre>
+            </div>
+        </div>
+
+        <!-- Interactive Demo -->
+        <div class="neo-brutalist bg-white p-6">
+            <h2 class="text-2xl mb-4">Try It Yourself</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block mb-2">Component Type:</label>
+                    <select id="componentSelect" class="neo-brutalist w-full p-2 bg-white">
+                        <option value="Button">Button</option>
+                        <option value="Card">Card</option>
+                        <option value="Alert">Alert</option>
+                        <option value="Badge">Badge</option>
+                        <option value="Accordion">Accordion</option>
+                    </select>
+                </div>
+                <div>
+                    <button id="createComponent" class="neo-brutalist bg-yellow-400 text-black font-bold py-2 px-4">
+                        Create Component
+                    </button>
+                </div>
+            </div>
+            <div id="demo-area" class="mt-6 p-4 border-2 border-dashed border-gray-300 min-h-[100px]">
+                <!-- Components will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/neo-brutalist-library.js') }}"></script>
+    <script>
+        // Demo examples
+        NeoBrutalist.create('Button', '#button-demo', {
+            text: 'Demo Button',
+            color: 'blue-500',
+            onClick: () => alert('Button clicked!')
+        });
+
+        NeoBrutalist.create('Card', '#card-demo', {
+            title: 'Demo Card',
+            content: 'This is a sample card component.'
+        });
+
+        NeoBrutalist.create('Accordion', '#accordion-demo', {
+            items: [
+                { title: 'FAQ 1', content: 'Answer to first question.' },
+                { title: 'FAQ 2', content: 'Answer to second question.' }
+            ]
+        });
+
+        // Interactive demo
+        document.getElementById('createComponent').addEventListener('click', () => {
+            const componentType = document.getElementById('componentSelect').value;
+            const demoArea = document.getElementById('demo-area');
+            
+            // Clear previous demo
+            demoArea.innerHTML = '';
+            
+            // Create component based on selection
+            const configs = {
+                Button: { text: 'Generated Button', color: 'green-500' },
+                Card: { title: 'Generated Card', content: 'This card was created dynamically!' },
+                Alert: { message: 'Success! Component created.', type: 'success' },
+                Badge: { text: 'NEW', color: 'purple-500' },
+                Accordion: { 
+                    items: [
+                        { title: 'Dynamic Section', content: 'This accordion was created on the fly!' }
+                    ]
+                }
+            };
+            
+            NeoBrutalist.create(componentType, demoArea, configs[componentType]);
+        });
+    </script>
+</body>
+</html>

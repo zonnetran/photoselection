@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/neo-brutalist.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <!-- Welcome Header with Neo Brutalist styling -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-3">
+                📸 SUNNY'S PHOTOGRAPHY
+            </h1>
+            <div class="neo-brutalist bg-yellow-400 text-black p-4 mx-auto" style="max-width: 600px; font-family: 'Roboto Mono', monospace; ">
+                <p class="lead mb-0 font-weight-bold">PROFESSIONAL PHOTO SELECTION PORTAL</p>
+            </div>
+            <hr class="my-4" style="border: 2px solid #000;">
+        </div>
+        
+        <div class="neo-brutalist bg-white p-4 mb-4" style="pointer-events: none">
+            <h2 class="text-center mb-1 mt-1" style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 2.5rem;">
+                YOUR PRIVATE GALLERIES
+            </h2>
+        </div>
+
+        {% if galleries %}
+            <div class="row">
+                {% for gallery in galleries %}
+                <div class="col-md-6 col-lg-4 mb-4" style="pointer-events: none;">
+                    <div class="neo-brutalist bg-white h-100">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-3" style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; font-size: 1.5rem;">
+                                📁 {{ gallery.replace('_', ' ').title() }}
+                            </h5>
+                            <p class="card-text mb-3" style="font-family: 'Roboto Mono', monospace; font-size: 0.9rem;">
+                                {% if gallery in passwords %}
+                                    🔒 Password Protected Gallery
+                                {% else %}
+                                    🔓 Open Gallery
+                                {% endif %}
+                            </p>
+                            <div class="d-grid" style="pointer-events: auto !important">
+                                <a href="{{ url_for('gallery_login', gallery_name=gallery) }}" 
+                                   class="neo-brutalist bg-yellow-400 text-black text-decoration-none text-center py-3 px-4 font-weight-bold"
+                                   style="font-family: 'Roboto Mono', monospace; font-size: 1.1rem; display: block; ">
+                                    VIEW GALLERY
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="neo-brutalist bg-red-100 border-red-500 p-4 text-center">
+                <h3 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px;">
+                    NO GALLERIES AVAILABLE
+                </h3>
+                <p style="font-family: 'Roboto Mono', monospace;" class="mb-0">
+                    Please contact your photographer to set up your gallery.
+                </p>
+            </div>
+        {% endif %}
+
+        <!-- Info Section -->
+        <div class="neo-brutalist bg-black text-white p-4 mt-5">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px;">
+                        HOW IT WORKS
+                    </h4>
+                    <ul style="font-family: 'Roboto Mono', monospace;" class="list-unstyled">
+                        <li>🎯 Select your gallery</li>
+                        <li>🔑 Enter password (if required)</li>
+                        <li>❤️ Choose your favorite photos</li>
+                        <li>💬 Add comments (optional)</li>
+                        <li>📤 Submit your selection</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h4 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px;">
+                        NEED HELP?
+                    </h4>
+                    <p style="font-family: 'Roboto Mono', monospace;">
+                        Contact us at:<br>
+                        📧 info@sunnyphotography.com<br>
+                        📱 (555) 123-4567
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/neo-brutalist-library.js') }}"></script>
+{% endblock %}

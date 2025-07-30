@@ -1,0 +1,319 @@
+
+{% extends "base.html" %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/neo-brutalist.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="neo-brutalist bg-white p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px;">{{ gallery_name.replace('_', ' ').title() }}</h2>
+            <p class="text-muted mb-0" style="font-family: 'Roboto Mono', monospace;">Select your favorite photos and add comments</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="neo-brutalist bg-yellow-400 text-black px-3 py-2" style="font-family: 'Roboto Mono', monospace; font-weight: bold; background-color: #fbbf24 !important;">
+                <span id="counter">Selected: 0 of {{ images|length }}</span>
+            </div>
+            <button id="selectAll" class="neo-brutalist bg-blue-500 text-white px-3 py-2" style="font-family: 'Roboto Mono', monospace; background-color: #3b82f6 !important; box-shadow: 4px 4px 0 #000;">SELECT ALL</button>
+            <button id="clearAll" class="neo-brutalist bg-gray-500 text-white px-3 py-2" style="font-family: 'Roboto Mono', monospace; background-color: #6b7280 !important; box-shadow: 4px 4px 0 #000;">CLEAR ALL</button>
+            <button id="submitBtn" class="neo-brutalist bg-green-500 text-white px-3 py-2" disabled style="font-family: 'Roboto Mono', monospace; background-color: #10b981 !important; box-shadow: 4px 4px 0 #000;">SUBMIT SELECTION</button>
+        </div>
+    </div>
+</div>
+
+<div class="photo-grid" id="photoGrid">
+    {% for image in images %}
+    <div class="photo-card neo-brutalist bg-white" data-image="{{ image }}" style="transition: all 0.3s ease;">
+        <img src="{{ url_for('serve_image', gallery_name=gallery_name, filename=image) }}" 
+             alt="{{ image }}" class="photo-img" onclick="openImageZoom('{{ image }}', '{{ gallery_name }}')">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-check-label small flex-grow-1" for="check_{{ loop.index }}" style="font-family: 'Roboto Mono', monospace;">
+                    {{ image }}
+                </label>
+                <div class="heart-checkbox neo-brutalist" onclick="toggleSelection('{{ image }}')" style="background-color: #f8f9fa; border: 3px solid #000; box-shadow: 2px 2px 0 #000;">
+                    <input class="form-check-input" type="checkbox" id="check_{{ loop.index }}">
+                    <i class="fas fa-heart heart-icon" style="color: #ddd;"></i>
+                </div>
+            </div>
+            <div class="comment-box">
+                <textarea class="neo-brutalist w-100 p-2 bg-white" 
+                          id="comment_{{ image }}" 
+                          placeholder="Add a comment..." 
+                          rows="2" 
+                          style="font-family: 'Roboto Mono', monospace; font-size: 0.9rem; resize: vertical; box-shadow: 2px 2px 0 #000;"></textarea>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+/* Enhanced Neo Brutalist photo cards */
+.photo-card {
+    border: 3px solid #000 !important;
+    box-shadow: 4px 4px 0 #000 !important;
+    transition: all 0.2s ease !important;
+}
+
+.photo-card:hover {
+    transform: translate(-2px, -2px) !important;
+    box-shadow: 6px 6px 0 #000 !important;
+}
+
+.photo-card.selected {
+    border-color: #e74c3c !important;
+    box-shadow: 4px 4px 0 #e74c3c !important;
+}
+
+.photo-card.selected:hover {
+    box-shadow: 6px 6px 0 #e74c3c !important;
+}
+
+.heart-checkbox {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #000 !important;
+    box-shadow: 2px 2px 0 #000 !important;
+    transition: all 0.2s ease !important;
+}
+
+.heart-checkbox:hover {
+    transform: translate(-1px, -1px) !important;
+    box-shadow: 3px 3px 0 #000 !important;
+    background-color: #fff5f5 !important;
+}
+
+.heart-checkbox input[type="checkbox"]:checked + .heart-icon {
+    color: #e74c3c !important;
+    transform: scale(1.2) !important;
+}
+
+.heart-checkbox:has(input[type="checkbox"]:checked) {
+    border-color: #e74c3c !important;
+    box-shadow: 2px 2px 0 #e74c3c !important;
+    background-color: #fff5f5 !important;
+}
+
+/* Fix button colors and reduce shadows */
+.neo-brutalist.bg-blue-500 {
+    background-color: #3b82f6 !important;
+}
+
+.neo-brutalist.bg-gray-500 {
+    background-color: #6b7280 !important;
+}
+
+.neo-brutalist.bg-green-500 {
+    background-color: #10b981 !important;
+}
+
+.neo-brutalist.bg-yellow-400 {
+    background-color: #fbbf24 !important;
+}
+
+.neo-brutalist.bg-red-500 {
+    background-color: #ef4444 !important;
+}
+</style>
+
+<!-- Image Zoom Modal -->
+<div id="imageZoomModal" class="image-zoom-modal" onclick="closeImageZoom()">
+    <span class="zoom-close">&times;</span>
+    <div class="zoom-content">
+        <img id="zoomImage" class="zoom-image" src="" alt="">
+    </div>
+</div>
+
+<!-- Success Modal (Neo Brutalist Style) -->
+<div id="successModalNeo" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border: 3px solid black; box-shadow: 6px 6px 0 black; max-width: 500px; width: 90%;">
+        <h3 style="font-family: 'Bebas Neue', sans-serif; margin-bottom: 15px; letter-spacing: 2px;">SELECTION SUBMITTED!</h3>
+        <p style="font-family: 'Roboto Mono', monospace; margin-bottom: 20px;">
+            Your photo selection has been saved successfully.
+        </p>
+        <div id="selectionSummaryModal" style="font-family: 'Roboto Mono', monospace; margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border: 2px solid #000;">
+            <!-- Selection summary will be populated here -->
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="goToHomepage()" style="padding: 10px 20px; border: 3px solid black; background: #10b981; color: white; font-family: 'Roboto Mono', monospace; font-weight: bold; box-shadow: 3px 3px 0 black; cursor: pointer;">
+                RETURN TO GALLERIES
+            </button>
+            <button onclick="downloadSummary(); document.getElementById('successModalNeo').style.display = 'none';" style="padding: 10px 20px; border: 3px solid black; background: #6b7280; color: white; font-family: 'Roboto Mono', monospace; font-weight: bold; box-shadow: 3px 3px 0 black; cursor: pointer;">
+                DOWNLOAD SUMMARY
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedImages = new Set();
+const totalImages = {{ images|length }};
+
+function updateCounter() {
+    document.getElementById('counter').textContent = `Selected: ${selectedImages.size} of ${totalImages}`;
+    document.getElementById('submitBtn').disabled = selectedImages.size === 0;
+}
+
+function toggleSelection(imageName) {
+    const card = document.querySelector(`[data-image="${imageName}"]`);
+    const checkbox = card.querySelector('input[type="checkbox"]');
+    
+    if (selectedImages.has(imageName)) {
+        selectedImages.delete(imageName);
+        card.classList.remove('selected');
+        checkbox.checked = false;
+    } else {
+        selectedImages.add(imageName);
+        card.classList.add('selected');
+        checkbox.checked = true;
+    }
+    updateCounter();
+}
+
+function openImageZoom(imageName, galleryName) {
+    const modal = document.getElementById('imageZoomModal');
+    const zoomImage = document.getElementById('zoomImage');
+    zoomImage.src = `{{ url_for('serve_image', gallery_name=gallery_name, filename='') }}${imageName}`;
+    zoomImage.alt = imageName;
+    modal.style.display = 'block';
+}
+
+function closeImageZoom() {
+    document.getElementById('imageZoomModal').style.display = 'none';
+}
+
+// Close zoom on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageZoom();
+    }
+});
+
+document.getElementById('selectAll').onclick = function() {
+    document.querySelectorAll('.photo-card').forEach(card => {
+        const imageName = card.dataset.image;
+        if (!selectedImages.has(imageName)) {
+            selectedImages.add(imageName);
+            card.classList.add('selected');
+            card.querySelector('input[type="checkbox"]').checked = true;
+        }
+    });
+    updateCounter();
+};
+
+document.getElementById('clearAll').onclick = function() {
+    selectedImages.clear();
+    document.querySelectorAll('.photo-card').forEach(card => {
+        card.classList.remove('selected');
+        card.querySelector('input[type="checkbox"]').checked = false;
+    });
+    updateCounter();
+};
+
+document.getElementById('submitBtn').onclick = function() {
+    if (selectedImages.size === 0) {
+        alert('Please select at least one photo before submitting.');
+        return;
+    }
+    
+    // Proceed with submission directly
+    const comments = {};
+    selectedImages.forEach(image => {
+        const commentBox = document.getElementById(`comment_${image}`);
+        if (commentBox && commentBox.value.trim()) {
+            comments[image] = commentBox.value.trim();
+        }
+    });
+    
+    fetch('/submit_selection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            gallery_name: '{{ gallery_name }}',
+            selections: Array.from(selectedImages),
+            comments: comments
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success modal with summary
+            document.getElementById('selectionSummaryModal').innerHTML = 
+                `<strong>Selected <span style="color: #e74c3c;">${selectedImages.size}</span> photos:</strong><br>` +
+                Array.from(selectedImages).map(img => `• ${img}`).join('<br>');
+            document.getElementById('successModalNeo').style.display = 'flex';
+        }
+    });
+};
+
+// Modal event handlers
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove confirmation modal handlers since we're not using it anymore
+    
+    // Close modal when clicking outside
+    document.getElementById('successModalNeo').onclick = function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
+    };
+});
+
+function goToHomepage() {
+    window.location.href = '/';
+}
+
+function downloadSummary() {
+    const galleryName = '{{ gallery_name }}';
+    const date = new Date().toLocaleDateString();
+    const comments = {};
+    
+    selectedImages.forEach(image => {
+        const commentBox = document.getElementById(`comment_${image}`);
+        if (commentBox && commentBox.value.trim()) {
+            comments[image] = commentBox.value.trim();
+        }
+    });
+    
+    let summary = `Photo Selection Summary\n`;
+    summary += `Gallery: ${galleryName.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}\n`;
+    summary += `Date: ${date}\n\n`;
+    summary += `Selected Photos (${selectedImages.size} of ${totalImages}):\n`;
+    
+    Array.from(selectedImages).forEach(image => {
+        summary += `• ${image}`;
+        if (comments[image]) {
+            summary += ` - "${comments[image]}"`;
+        }
+        summary += '\n';
+    });
+    
+    if (Object.keys(comments).length > 0) {
+        summary += '\nComments:\n';
+        Object.entries(comments).forEach(([image, comment]) => {
+            summary += `${image}: "${comment}"\n`;
+        });
+    }
+    
+    summary += '\nThank you for using Sunny\'s Photography!';
+    
+    const blob = new Blob([summary], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${galleryName}_selection_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}
+
+

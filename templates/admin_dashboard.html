@@ -1,0 +1,351 @@
+
+{% extends "base.html" %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+/* Override fonts for admin dashboard only */
+body.admin-page {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+body.admin-page h1, body.admin-page h2, body.admin-page h3, body.admin-page h4, body.admin-page h5, body.admin-page h6 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    letter-spacing: normal !important;
+}
+
+body.admin-page .table th {
+    font-weight: 600 !important;
+    letter-spacing: normal !important;
+}
+
+/* Exception: Keep original fonts for footer */
+body.admin-page footer .footer-title {
+    font-family: 'Bebas Neue', sans-serif !important;
+    letter-spacing: 2px !important;
+}
+
+body.admin-page footer .footer-subtitle {
+    font-family: 'Bebas Neue', sans-serif !important;
+    letter-spacing: 1px !important;
+}
+
+body.admin-page footer .footer-text {
+    font-family: 'Roboto Mono', monospace !important;
+}
+
+/* Preserve icons */
+body.admin-page .fas, body.admin-page .fa, body.admin-page [class*="fa-"] {
+    font-family: "Font Awesome 6 Free" !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog me-2"></i>Admin Dashboard</h2>
+    <a href="{{ url_for('admin_logout') }}" class="btn btn-danger">Logout</a>
+</div>
+
+<!-- Create New Gallery -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-plus me-2"></i>Create New Gallery</h5>
+    </div>
+    <div class="card-body">
+        <form id="createGalleryForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="gallery_name" class="form-label">Gallery Name</label>
+                    <input type="text" class="form-control" id="gallery_name" name="gallery_name" required placeholder="Use underscores instead of spaces (e.g., wedding_smith)">
+                </div>
+                <div class="col-md-4">
+                    <label for="password" class="form-label">Password (optional)</label>
+                    <input type="text" class="form-control" id="password" name="password" placeholder="Optional password">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-warning w-100">Create</button>
+                </div>
+            </div>
+        </form>
+        <div id="createMessage" class="mt-2"></div>
+    </div>
+</div>
+
+<!-- Existing Galleries -->
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-images me-2"></i>Existing Galleries</h5>
+    </div>
+    <div class="card-body">
+        {% if galleries %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Gallery Name</th>
+                            <th>Password</th>
+                            <th>Photos</th>
+                            <th>Upload Path</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gallery in galleries %}
+                        <tr>
+                            <td>
+                                <strong>{{ gallery.replace('_', ' ').title() }}</strong><br>
+                                <small class="text-muted">{{ gallery }}</small>
+                            </td>
+                            <td>
+                                {% if gallery in passwords %}
+                                    <span class="badge bg-secondary">{{ passwords[gallery] }}</span>
+                                {% else %}
+                                    <span class="text-muted">No password</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ gallery_stats[gallery] }} photos</span>
+                            </td>
+                            <td>
+                                <code>static/galleries/{{ gallery }}/</code>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="window.location.href='{{ url_for('admin_view_selections', gallery_name=gallery) }}'">
+                                    <i class="fas fa-eye me-1"></i>View Selections
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="window.location.href='{{ url_for('admin_manage_gallery', gallery_name=gallery) }}'">
+                                    <i class="fas fa-cog me-1"></i>Manage
+                                </button>
+                                <button class="btn btn-sm btn-success me-1" onclick="showUploadModal('{{ gallery }}')">
+                                    <i class="fas fa-upload me-1"></i>Upload Photos
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteGallery('{{ gallery }}')">
+                                    <i class="fas fa-trash me-1"></i>Delete Gallery
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">No galleries created yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Photos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Select Images</label>
+                        <input type="file" class="form-control" id="images" name="images" multiple accept=".jpg,.jpeg,.png,.gif" required>
+                        <small class="text-muted">Select multiple JPG, PNG, or GIF files</small>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Gallery:</strong> <span id="uploadGalleryName"></span>
+                    </div>
+                </form>
+                <div id="uploadMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="uploadImages()">
+                    <i class="fas fa-upload me-1"></i>Upload Images
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Client Selections -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5><i class="fas fa-clock me-2"></i>Recent Client Selections</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Gallery</th>
+                        <th class="text-center">Photos Selected</th>
+                        <th>Submitted</th>
+                    </tr>
+                </thead>
+                <tbody id="recentSelectionsTable">
+                    {% for selection in recent_selections %}
+                    <tr>
+                        <td>
+                            {{ selection.gallery_name.replace('_', ' ').title() }}
+                            {% if selection.is_new %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center"><span class="badge bg-success">{{ selection.total_selected }}</span></td>
+                        <td>{{ selection.timestamp[:19].replace('T', ' ') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="noSelectionsMessage" style="display: none;">
+            <p class="text-muted">No client selections yet.</p>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('admin-page');
+});
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentGallery = '';
+
+function showUploadModal(galleryName) {
+    currentGallery = galleryName;
+    document.getElementById('uploadGalleryName').textContent = galleryName.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    document.getElementById('uploadForm').reset();
+    document.getElementById('uploadMessage').innerHTML = '';
+    new bootstrap.Modal(document.getElementById('uploadModal')).show();
+}
+
+function uploadImages() {
+    const formData = new FormData();
+    const files = document.getElementById('images').files;
+    
+    if (files.length === 0) {
+        document.getElementById('uploadMessage').innerHTML = 
+            '<div class="alert aleilect at least one image</div>';
+        return;
+    }
+    
+    for (let file of files) {
+        formData.append('images', file);
+    }
+    
+    fetch(`/admin/upload/${currentGallery}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const messageDiv = document.getElementById('uploadMessage');
+        if (data.success) {
+            messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();
+                location.reload();
+            }, 1500);
+        } else {
+            messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+        }
+    })
+    .catch(error => {
+        document.getElementById('uploadMessage').innerHTML = 
+            '<div class="alert alert-danger">Upload failed. Please try again.</div>';
+    });
+}
+
+function deleteGallery(galleryName) {
+    const displayName = galleryName.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    if (!confirm(`Are you sure you want to delete the entire gallery "${displayName}"?\n\nThis will permanently delete:\n- All photos in the gallery\n- Gallery password\n- Cannot be undone!`)) {
+        return;
+    }
+    
+    if (!confirm(`FINAL WARNING: Delete "${displayName}" gallery forever?`)) {
+        return;
+    }
+    
+    fetch(`/admin/delete_gallery/${galleryName}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // Force hard refresh to clear cache
+            window.location.href = window.location.href + '?t=' + Date.now();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Delete failed. Please try again.');
+    });
+}
+
+document.getElementById('createGalleryForm').onsubmit = function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/admin/create_gallery', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const messageDiv = document.getElementById('createMessage');
+        if (data.success) {
+            messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            this.reset();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+        }
+    });
+};
+
+// Auto-update recent selections
+function updateRecentSelections() {
+    fetch('/admin/get_recent_selections')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tableBody = document.getElementById('recentSelectionsTable');
+            const noMessage = document.getElementById('noSelectionsMessage');
+            
+            if (data.selections.length > 0) {
+                tableBody.innerHTML = '';
+                data.selections.forEach(selection => {
+                    const galleryName = selection.gallery_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const asterisk = selection.is_new ? '<span class="text-danger">*</span>' : '';
+                    const timestamp = selection.timestamp.substring(0, 19).replace('T', ' ');
+                    
+                    const row = `
+                        <tr>
+                            <td>${galleryName} ${asterisk}</td>
+                            <td class="text-center"><span class="badge bg-success">${selection.total_selected}</span></td>
+                            <td>${timestamp}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+                tableBody.style.display = '';
+                noMessage.style.display = 'none';
+            } else {
+                tableBody.style.display = 'none';
+                noMessage.style.display = 'block';
+            }
+        }
+    })
+    .catch(error => console.log('Update failed:', error));
+}
+
+// Auto-update every 5 seconds
+setInterval(updateRecentSelections, 5000);
+</script>
+{% endblock %}

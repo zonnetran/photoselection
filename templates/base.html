@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Photo Selection Portal{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/neo-brutalist.css') }}">
+    {% block head %}{% endblock %}
+    
+    <style>
+        :root {
+            --bs-body-font-family: 'Roboto Mono', monospace;
+        }
+        
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #f5f5f5;
+        }
+        
+        .navbar-brand {
+            font-family: 'Bebas Neue', sans-serif !important;
+            letter-spacing: 2px;
+            font-size: 1.5rem !important;
+        }
+        
+        /* Footer default styles */
+        .footer-title {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+        }
+        
+        .footer-subtitle {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+        }
+        
+        .footer-text {
+            font-family: 'Roboto Mono', monospace;
+        }
+        
+        /* Disable hover effects for nav and footer */
+        nav.neo-brutalist:hover,
+        footer.neo-brutalist:hover {
+            box-shadow: 0 4px 0 #000 !important;
+            transform: none !important;
+        }
+        
+        footer.neo-brutalist:hover {
+            box-shadow: 0 -4px 0 #000 !important;
+        }
+        
+        /* Existing styles... */
+        .photo-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 20px; 
+        }
+        .photo-card { 
+            border: 3px solid transparent; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            transition: all 0.3s; 
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .photo-card.selected { 
+            border-color: #28a745; 
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.3); 
+        }
+        .photo-img { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            cursor: pointer; 
+        }
+        
+        /* Heart checkbox styling */
+        .heart-checkbox {
+            position: relative;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .heart-checkbox:hover {
+            border-color: #e74c3c;
+            background-color: #fff5f5;
+        }
+        .heart-checkbox input[type="checkbox"] {
+            display: none;
+        }
+        .heart-checkbox .heart-icon {
+            font-size: 1.2rem;
+            color: #ddd;
+            transition: all 0.3s ease;
+        }
+        .heart-checkbox input[type="checkbox"]:checked + .heart-icon {
+            color: #e74c3c;
+            transform: scale(1.1);
+        }
+        .heart-checkbox input[type="checkbox"]:checked {
+            + .heart-icon {
+                color: #e74c3c;
+            }
+        }
+        .heart-checkbox:has(input[type="checkbox"]:checked) {
+            border-color: #e74c3c;
+            background-color: #fff5f5;
+        }
+        
+        /* Sticky footer */
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            flex: 1;
+        }
+        
+        /* Image zoom modal */
+        .image-zoom-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            cursor: pointer;
+        }
+        .zoom-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 80vw;
+            max-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .zoom-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            border-radius: 12px;
+            object-fit: contain;
+        }
+        .zoom-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* Hide Google Translate "Powered by" text */
+        .goog-te-gadget {
+            font-family: 'Roboto Mono', monospace !important;
+        }
+        
+        .goog-te-gadget .goog-te-gadget-simple {
+            background: transparent !important;
+            border: none !important;
+            font-family: 'Roboto Mono', monospace !important;
+        }
+        
+        .goog-te-gadget .goog-te-gadget-simple .goog-te-menu-value {
+            color: white !important;
+            font-family: 'Roboto Mono', monospace !important;
+            font-weight: bold !important;
+        }
+        
+        /* Hide the "Powered by Google" text */
+        .goog-te-gadget > span > a {
+            display: none !important;
+        }
+        
+        .goog-te-gadget .goog-te-gadget-simple span {
+            border: none !important;
+        }
+        
+        /* Hide Google branding */
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="neo-brutalist" style="background-color: #000; color: white; border-radius: 0; box-shadow: 0 4px 0 #000;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center py-3 position-relative">
+                <!-- Left: Logo -->
+                <a href="{{ url_for('index') }}" class="text-decoration-none" style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 3px; font-size: 1.8rem; color: white;">
+                    📸 SUNNY'S PHOTOGRAPHY
+                </a>
+                
+                <!-- Center: Navigation Links (absolutely centered) -->
+                <div class="d-none d-lg-flex align-items-center gap-4 position-absolute top-50 start-50 translate-middle">
+                    <a href="{{ url_for('index') }}" class="text-white text-decoration-none" style="font-family: 'Roboto Mono', monospace; font-weight: bold;">
+                        HOME
+                    </a>
+                    <a href="#about" class="text-white text-decoration-none" style="font-family: 'Roboto Mono', monospace; font-weight: bold;">
+                        ABOUT US
+                    </a>
+                    <a href="#contact" class="text-white text-decoration-none" style="font-family: 'Roboto Mono', monospace; font-weight: bold;">
+                        CONTACT US
+                    </a>
+                    <a href="#galleries" class="text-white text-decoration-none" style="font-family: 'Roboto Mono', monospace; font-weight: bold;">
+                        PRIVATE GALLERY
+                    </a>
+                </div>
+                
+                <!-- Right: Translation + Admin (hidden on mobile) -->
+                <div class="d-none d-lg-flex align-items-center gap-3">
+                    <div id="google_translate_element" style="font-family: 'Roboto Mono', monospace;"></div>
+                    <a href="{{ url_for('admin_login') }}" class="neo-brutalist text-white px-3 py-2 text-decoration-none" style="font-family: 'Roboto Mono', monospace; font-size: 0.9rem; background-color: #ef4444 !important;">
+                        <i class="fas fa-shield-alt"></i> ADMIN
+                    </a>
+                </div>
+                
+                <!-- Mobile: Burger Menu Button -->
+                <button class="d-lg-none btn text-white" id="burgerBtn" style="border: 2px solid white; padding: 8px 12px;">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu (hidden by default) -->
+            <div class="d-lg-none" id="mobileMenu" style="display: none; border-top: 2px solid white; padding-top: 15px;">
+                <div class="d-flex flex-column gap-2 pb-3">
+                    <a href="{{ url_for('index') }}" class="text-white text-decoration-none py-2" style="font-family: 'Roboto Mono', monospace; font-weight: bold;">
+                        HOME
+                    </a>
+                    <a href="#about" class="text-white text-decoration-none py-2" style="font-family: 'Roboto Mono', monospace; font-weight: bold;">
+                        ABOUT US
+                    </a>
+                    <a href="#contact" class="text-white text-decoration-none py-2" style="font-family: 'Roboto Mono', monospace; font-weight: bold;">
+                        CONTACT US
+                    </a>
+                    <a href="#galleries" class="text-white text-decoration-none py-2" style="font-family: 'Roboto Mono', monospace; font-weight: bold;">
+                        PRIVATE GALLERY
+                    </a>
+                    <div id="google_translate_element_mobile" class="py-2" style="font-family: 'Roboto Mono', monospace;"></div>
+                    <a href="{{ url_for('admin_login') }}" class="neo-brutalist text-white px-3 py-2 text-decoration-none mt-2" style="font-family: 'Roboto Mono', monospace; font-size: 0.9rem; background-color: #ef4444 !important; width: fit-content;">
+                        <i class="fas fa-shield-alt"></i> ADMIN
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Footer -->
+    <footer class="neo-brutalist bg-black text-white mt-5 py-4" style="border-radius: 0; box-shadow: 0 -4px 0 #000;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="footer-title">📸 SUNNY'S PHOTOGRAPHY</h5>
+                    <p class="mb-2 footer-text">Professional Photo Selection Portal</p>
+                    <p class="small footer-text">Making photo selection simple and elegant</p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="footer-title">QUICK LINKS</h6>
+                    <ul class="list-unstyled footer-text">
+                        <li><a href="{{ url_for('index') }}" class="text-white text-decoration-none">→ Home</a></li>
+                        <li><a href="{{ url_for('admin_login') }}" class="text-white text-decoration-none">→ Admin Access</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="footer-title">CONTACT</h6>
+                    <p class="small mb-1 footer-text">📧 info@sunnyphotography.com</p>
+                    <p class="small mb-1 footer-text">📱 (555) 123-4567</p>
+                    <p class="small footer-text">🌐 www.sunnyphotography.com</p>
+                </div>
+            </div>
+            <hr class="my-3" style="border: 2px solid white;">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 small footer-text">© 2024 SUNNY'S PHOTOGRAPHY. ALL RIGHTS RESERVED.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="footer-text">POWERED BY FLASK & BOOTSTRAP</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Theme management
+        const getStoredTheme = () => localStorage.getItem('theme')
+        const setStoredTheme = theme => localStorage.setItem('theme', theme)
+        
+        const getPreferredTheme = () => {
+            const storedTheme = getStoredTheme()
+            if (storedTheme) {
+                return storedTheme
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        
+        const setTheme = theme => {
+            document.documentElement.setAttribute('data-bs-theme', theme)
+            const icon = document.getElementById('theme-icon')
+            if (icon) {
+                icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon'
+            }
+        }
+
+        // Burger menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const burgerBtn = document.getElementById('burgerBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            if (burgerBtn && mobileMenu) {
+                burgerBtn.addEventListener('click', function() {
+                    const isVisible = mobileMenu.style.display !== 'none';
+                    mobileMenu.style.display = isVisible ? 'none' : 'block';
+                    
+                    // Change burger icon
+                    const icon = burgerBtn.querySelector('i');
+                    icon.className = isVisible ? 'fas fa-bars' : 'fas fa-times';
+                });
+                
+                // Close mobile menu when clicking on links
+                mobileMenu.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        mobileMenu.style.display = 'none';
+                        burgerBtn.querySelector('i').className = 'fas fa-bars';
+                    });
+                });
+            }
+        });
+
+        // Google Translate initialization
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,vi,zh,ko,ja,th,fr,es',
+                layout: google.translate.TranslateElement.InlineLayout.COMPLEX,
+            }, 'google_translate_element');
+            
+            // Also initialize for mobile
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,vi,zh,ko,ja,th,fr,es',
+                layout: google.translate.TranslateElement.InlineLayout.COMPLEX,
+            }, 'google_translate_element_mobile');
+        }
+    </script>
+    
+    <!-- Load Google Translate script -->
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

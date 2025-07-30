@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo Brutalist UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brutal-yellow': '#FFD166',
+                        'brutal-black': '#073B4C',
+                        'brutal-red': '#EF476F',
+                        'brutal-blue': '#118AB2',
+                        'brutal-green': '#06D6A0',
+                        'brutal-gray': '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Archivo+Black&display=swap" rel="stylesheet">
+</head>
+<body class="p-6 md:p-8 bg-brutal-gray">
+    <div class="container mx-auto max-w-6xl">
+      <header class="mb-12">
+        <h1 class="text-4xl md:text-5xl mb-4">Neo Brutalist UI</h1>
+        <p class="text-lg max-w-2xl">A professional collection of raw, functional components with intentional design constraints.</p>
+      </header>
+  
+      <!-- Navigation -->
+      <nav class="mb-12">
+        <ul class="flex flex-wrap gap-4">
+          <li><a href="#buttons" class="text-lg hover:underline">Buttons</a></li>
+          <li><a href="#cards" class="text-lg hover:underline">Cards</a></li>
+          <li><a href="#forms" class="text-lg hover:underline">Forms</a></li>
+          <li><a href="#feedback" class="text-lg hover:underline">Feedback</a></li>
+          <li><a href="#navigation" class="text-lg hover:underline">Navigation</a></li>
+        </ul>
+      </nav>
+  
+      <!-- Component Sections -->
+      <div id="components" class="space-y-16">
+        <!-- Buttons Section -->
+        <section id="buttons" class="component-section">
+          <h2 class="text-3xl mb-6">Buttons</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+              <h3 class="text-xl mb-3">Primary</h3>
+              <button class="brutal-border bg-brutal-yellow text-brutal-black px-6 py-3 text-lg font-medium w-full">
+                Click Me
+              </button>
+            </div>
+            <div>
+              <h3 class="text-xl mb-3">Secondary</h3>
+              <button class="brutal-border bg-white text-brutal-black px-6 py-3 text-lg font-medium w-full">
+                Secondary
+              </button>
+            </div>
+            <div>
+              <h3 class="text-xl mb-3">Destructive</h3>
+              <button class="brutal-border bg-brutal-red text-white px-6 py-3 text-lg font-medium w-full">
+                Delete
+              </button>
+            </div>
+            <div>
+              <h3 class="text-xl mb-3">Disabled</h3>
+              <button disabled class="brutal-border bg-gray-300 text-gray-500 px-6 py-3 text-lg font-medium w-full cursor-not-allowed">
+                Disabled
+              </button>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Cards Section -->
+        <section id="cards" class="component-section">
+          <h2 class="text-3xl mb-6">Cards</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="brutal-border bg-white p-6">
+              <h3 class="text-2xl mb-3">Basic Card</h3>
+              <p class="mb-4">A simple card component with brutalist styling.</p>
+              <button class="brutal-border bg-brutal-yellow text-brutal-black px-4 py-2 text-base">
+                Action
+              </button>
+            </div>
+            <div class="brutal-border bg-brutal-black text-white p-6">
+              <h3 class="text-2xl mb-3">Dark Card</h3>
+              <p class="mb-4">Same component with inverted color scheme for contrast.</p>
+              <button class="brutal-border bg-brutal-yellow text-brutal-black px-4 py-2 text-base">
+                Action
+              </button>
+            </div>
+            <div class="brutal-border bg-brutal-blue text-white p-6">
+              <h3 class="text-2xl mb-3">Accent Card</h3>
+              <p class="mb-4">Use colored cards to highlight important content.</p>
+              <button class="brutal-border bg-white text-brutal-black px-4 py-2 text-base">
+                Action
+              </button>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Forms Section -->
+        <section id="forms" class="component-section">
+          <h2 class="text-3xl mb-6">Form Elements</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-6">
+              <div>
+                <h3 class="text-xl mb-3">Text Input</h3>
+                <input type="text" placeholder="Enter your name" 
+                       class="brutal-border w-full p-3 bg-white">
+              </div>
+              <div>
+                <h3 class="text-xl mb-3">Select</h3>
+                <select class="brutal-border w-full p-3 bg-white appearance-none">
+                  <option>Choose an option</option>
+                  <option>Option 1</option>
+                  <option>Option 2</option>
+                </select>
+              </div>
+              <div>
+                <h3 class="text-xl mb-3">Textarea</h3>
+                <textarea placeholder="Your message" rows="4"
+                          class="brutal-border w-full p-3 bg-white"></textarea>
+              </div>
+            </div>
+            <div class="space-y-6">
+              <div>
+                <h3 class="text-xl mb-3">Checkbox</h3>
+                <label class="flex items-center space-x-3">
+                  <input type="checkbox" class="brutal-border w-5 h-5 accent-brutal-yellow">
+                  <span>I agree to terms</span>
+                </label>
+              </div>
+              <div>
+                <h3 class="text-xl mb-3">Radio Buttons</h3>
+                <div class="space-y-2">
+                  <label class="flex items-center space-x-3">
+                    <input type="radio" name="option" class="brutal-border w-5 h-5 accent-brutal-yellow">
+                    <span>Option 1</span>
+                  </label>
+                  <label class="flex items-center space-x-3">
+                    <input type="radio" name="option" class="brutal-border w-5 h-5 accent-brutal-yellow">
+                    <span>Option 2</span>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl mb-3">Toggle Switch</h3>
+                <label class="flex items-center space-x-3">
+                  <div class="relative">
+                    <input type="checkbox" class="sr-only">
+                    <div class="brutal-border w-12 h-6 bg-gray-300">
+                      <span class="absolute left-0 top-0 w-6 h-6 bg-brutal-black transition-transform duration-200"></span>
+                    </div>
+                  </div>
+                  <span>Toggle me</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Feedback Section -->
+        <section id="feedback" class="component-section">
+          <h2 class="text-3xl mb-6">Feedback Components</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-6">
+              <div class="brutal-border bg-brutal-green text-white p-4 flex justify-between items-start">
+                <div>
+                  <h4 class="text-xl mb-1">Success</h4>
+                  <p>Your action was completed successfully.</p>
+                </div>
+                <button class="text-2xl leading-none" aria-label="Close">&times;</button>
+              </div>
+              <div class="brutal-border bg-brutal-red text-white p-4 flex justify-between items-start">
+                <div>
+                  <h4 class="text-xl mb-1">Error</h4>
+                  <p>Something went wrong. Please try again.</p>
+                </div>
+                <button class="text-2xl leading-none" aria-label="Close">&times;</button>
+              </div>
+            </div>
+            <div>
+              <div class="brutal-border bg-white p-6">
+                <h3 class="text-2xl mb-4">Modal Dialog</h3>
+                <p class="mb-6">This is an example of a modal dialog component with brutalist styling.</p>
+                <div class="flex justify-end space-x-3">
+                  <button class="brutal-border bg-white text-brutal-black px-4 py-2">
+                    Cancel
+                  </button>
+                  <button class="brutal-border bg-brutal-yellow text-brutal-black px-4 py-2">
+                    Confirm
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+  
+        <!-- Navigation Section -->
+        <section id="navigation" class="component-section">
+          <h2 class="text-3xl mb-6">Navigation</h2>
+          <div class="space-y-8">
+            <div>
+              <h3 class="text-xl mb-3">Horizontal Nav</h3>
+              <nav class="brutal-border bg-brutal-black text-white p-4">
+                <ul class="flex flex-wrap gap-6">
+                  <li><a href="#" class="text-lg hover:underline">Home</a></li>
+                  <li><a href="#" class="text-lg hover:underline">Products</a></li>
+                  <li><a href="#" class="text-lg hover:underline">Services</a></li>
+                  <li><a href="#" class="text-lg hover:underline">About</a></li>
+                  <li><a href="#" class="text-lg hover:underline">Contact</a></li>
+                </ul>
+              </nav>
+            </div>
+            <div>
+              <h3 class="text-xl mb-3">Pagination</h3>
+              <div class="brutal-border bg-white p-4 flex justify-center">
+                <nav class="flex space-x-1">
+                  <a href="#" class="brutal-border bg-white px-3 py-1">Previous</a>
+                  <a href="#" class="brutal-border bg-brutal-yellow px-3 py-1">1</a>
+                  <a href="#" class="brutal-border bg-white px-3 py-1">2</a>
+                  <a href="#" class="brutal-border bg-white px-3 py-1">3</a>
+                  <a href="#" class="brutal-border bg-white px-3 py-1">Next</a>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+  
+      <footer class="mt-16 pt-8 border-t-2 border-brutal-black">
+        <p class="text-center">Neo Brutalist UI Library • Designed for clarity and function</p>
+      </footer>
+    </div>
+    
+    <a target="_blank" href="https://www.rustcodeweb.com/" 
+       style="position: fixed; bottom: 1rem; right: 1rem; background: #FFD166; color: #073B4C; text-decoration: none; padding: 0.5rem 1rem; border: 3px solid #073B4C; box-shadow: 3px 3px 0 #073B4C; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 600; font-size: 0.875rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1200; border-radius: 2px; display: flex; align-items: center; gap: 0.5rem;"
+       onmouseover="this.style.background='#F8F9FA'; this.style.transform='translate(-1px, -1px)'; this.style.boxShadow='4px 4px 0 #073B4C';"
+       onmouseout="this.style.background='#FFD166'; this.style.transform='translate(0, 0)'; this.style.boxShadow='3px 3px 0 #073B4C';"
+       onmousedown="this.style.transform='translate(0, 0)'; this.style.boxShadow='2px 2px 0 #073B4C';"
+       onmouseup="this.style.transform='translate(-1px, -1px)'; this.style.boxShadow='4px 4px 0 #073B4C';"
+       aria-label="Visit rustcodeweb.com">
+       <i class="fas fa-link" style="font-size: 1rem;"></i>
+       rustcodeweb.com
+    </a>
+  </body>
+
+  <style>
+    body {
+  font-family: 'IBM Plex Mono', monospace;
+  background-color: #fafafa;
+  color: #0a0a0a;
+  line-height: 1.6;
+}
+.brutal-border {
+  border: 3px solid #0a0a0a;
+  box-shadow: 6px 6px 0 #0a0a0a;
+  transition: all 0.2s ease;
+}
+.brutal-border:hover {
+  box-shadow: 4px 4px 0 #0a0a0a;
+  transform: translate(2px, 2px);
+}
+.brutal-border:active {
+  box-shadow: 2px 2px 0 #0a0a0a;
+  transform: translate(4px, 4px);
+}
+h1, h2, h3, h4 {
+  font-family: 'Archivo Black', sans-serif;
+  letter-spacing: 1px;
+  font-weight: normal;
+}
+.component-section {
+  scroll-margin-top: 2rem;
+}
+/* Focus styles for accessibility */
+[tabindex]:focus, button:focus, input:focus {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+  </style>
+
+<script>
+    // Add interactive functionality
+document.addEventListener('DOMContentLoaded', function() {
+  // Close alerts
+  document.querySelectorAll('[id="feedback"] button').forEach(button => {
+    button.addEventListener('click', function() {
+      this.closest('.brutal-border').remove();
+    });
+  });
+
+  // Toggle switch functionality
+  document.querySelectorAll('[id="forms"] input[type="checkbox"]').forEach(toggle => {
+    toggle.addEventListener('change', function() {
+      if (this.parentElement.classList.contains('relative')) {
+        const knob = this.nextElementSibling.querySelector('span');
+        knob.style.transform = this.checked ? 'translateX(100%)' : 'translateX(0)';
+      }
+    });
+  });
+
+  // Smooth scrolling for navigation
+  document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.querySelector(this.getAttribute('href')).scrollIntoView({
+        behavior: 'smooth'
+      });
+    });
+  });
+});
+</script>

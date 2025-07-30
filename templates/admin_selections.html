@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-images me-2"></i>{{ gallery_name.replace('_', ' ').title() }} - Client Selections</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">← Back to Dashboard</a>
+</div>
+
+{% if selections %}
+    {% for selection in selections %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    {{ selection.timestamp[:19].replace('T', ' ') }}
+                </h5>
+                <span class="badge bg-success">{{ selection.total_selected }} photos selected</span>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if selection.selected_images %}
+                <div class="row">
+                    {% for image in selection.selected_images %}
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card">
+                            <img src="{{ url_for('serve_image', gallery_name=gallery_name, filename=image) }}" 
+                                 class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ image }}">
+                            <div class="card-body p-2">
+                                <h6 class="card-title small">{{ image }}</h6>
+                                {% if image in selection.comments %}
+                                    <div class="alert alert-info p-2 small">
+                                        <strong>Comment:</strong> {{ selection.comments[image] }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No images selected in this submission.</p>
+            {% endif %}
+            
+            <!-- Download JSON button -->
+            <div class="mt-3">
+                <a href="data:text/json;charset=utf-8,{{ selection | tojson | urlencode }}" 
+                   download="{{ selection.filename }}" 
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-download me-1"></i>Download JSON
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        No client selections found for this gallery yet.
+    </div>
+{% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('admin-page');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/neo-brutalist.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="neo-brutalist bg-white p-5">
+            <h3 class="text-center mb-4" style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 2rem;">
+                🔒 GALLERY ACCESS
+            </h3>
+            <p class="text-center mb-4" style="font-family: 'Roboto Mono', monospace; color: #666;">
+                Enter password for: <strong>{{ gallery_name.replace('_', ' ').title() }}</strong>
+            </p>
+            
+            {% if error %}
+            <div class="alert alert-danger mb-4" style="background-color: #ef4444 !important; color: white !important; border: 3px solid #000 !important; font-family: 'Roboto Mono', monospace;">
+                <strong>ERROR:</strong> {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="POST" action="{{ url_for('authenticate', gallery_name=gallery_name) }}">
+                <div class="mb-4">
+                    <label for="password" class="form-label" style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px;">PASSWORD</label>
+                    <input type="password" class="neo-brutalist w-100 p-3 bg-white" id="password" name="password" required style="font-family: 'Roboto Mono', monospace;">
+                </div>
+                <button type="submit" class="neo-brutalist bg-yellow-400 text-black w-100 py-3" style="font-family: 'Roboto Mono', monospace; font-weight: bold; background-color: #facc14 !important;">
+                    ACCESS GALLERY
+                </button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <a href="{{ url_for('index') }}" class="text-decoration-none" style="font-family: 'Roboto Mono', monospace; color: #666;">
+                    ← Back to galleries
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

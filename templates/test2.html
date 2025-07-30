@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Neo Brutalist Component Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto">
+      <h1 class="text-4xl md:text-5xl mb-6 md:mb-8 text-center">Neo Brutalist Component Library</h1>
+  
+      <!-- Component Grid -->
+      <div id="components" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 gap-6">
+        <!-- Components will be injected here by JavaScript -->
+      </div>
+    </div>
+    
+    
+  <a target="_blank" href="https://www.rustcodeweb.com/" 
+     style="position: fixed; bottom: 0.6rem; right: 0.6rem; background: #FFD166; color: #073B4C; text-decoration: none; padding: 0.5rem 1rem; border: 3px solid #073B4C; box-shadow: 3px 3px 0 #073B4C; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 600; font-size: 0.875rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1200; border-radius: 2px; display: flex; align-items: center; gap: 0.5rem;"
+     onmouseover="this.style.background='#F8F9FA'; this.style.transform='translate(-1px, -1px)'; this.style.boxShadow='4px 4px 0 #073B4C';"
+     onmouseout="this.style.background='#FFD166'; this.style.transform='translate(0, 0)'; this.style.boxShadow='3px 3px 0 #073B4C';"
+     onmousedown="this.style.transform='translate(0, 0)'; this.style.boxShadow='2px 2px 0 #073B4C';"
+     onmouseup="this.style.transform='translate(-1px, -1px)'; this.style.boxShadow='4px 4px 0 #073B4C';"
+     aria-label="Visit rustcodeweb.com">
+     <i class="fas fa-link" style="font-size: 1rem;"></i>
+  </a>
+  </body>
+
+  <style>
+    body {
+  font-family: 'Roboto Mono', monospace;
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+.neo-brutalist {
+  border: 4px solid #000;
+  box-shadow: 8px 8px 0 #000;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+.neo-brutalist:hover {
+  box-shadow: 6px 6px 0 #000;
+  transform: translate(2px, 2px);
+}
+h1, h2, h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+}
+.component-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.component-preview {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  min-height: 200px;
+}
+  </style>
+
+  <script>
+    // Component Registry (same as before)
+const ComponentRegistry = {
+  // Button Component
+  Button: {
+    template: (props = {}) => `
+          <button class="neo-brutalist bg-${props.color || 'yellow-400'} text-${props.textColor || 'black'} text-lg font-bold py-3 px-6 hover:bg-${props.color || 'yellow-400'}-600 transition-none">
+            ${props.text || 'Click Me'}
+          </button>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Button.template(props);
+    }
+  },
+
+  // Card Component
+  Card: {
+    template: (props = {}) => `
+          <div class="neo-brutalist bg-white p-6">
+            <h3 class="text-3xl mb-4">${props.title || 'Card Title'}</h3>
+            <p class="text-base">${props.content || 'This is a Neo Brutalist card component.'}</p>
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Card.template(props);
+    }
+  },
+
+  // Input Component
+  Input: {
+    template: (props = {}) => `
+          <input type="${props.type || 'text'}" placeholder="${props.placeholder || 'Enter text...'}" 
+            class="neo-brutalist w-full p-3 text-lg bg-white border-4 border-black focus:outline-none">
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Input.template(props);
+    }
+  },
+
+  // Toggle Switch Component
+  Toggle: {
+    template: (props = {}) => `
+          <label class="flex items-center cursor-pointer">
+            <input type="checkbox" class="sr-only" ${props.checked ? 'checked' : ''}>
+            <div class="neo-brutalist w-12 h-6 bg-gray-300 relative">
+              <span class="absolute left-0 top-0 w-6 h-6 bg-black transition-transform duration-200 ease-in-out"></span>
+            </div>
+            <span class="ml-3 text-lg">${props.label || 'Toggle'}</span>
+          </label>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Toggle.template(props);
+      const input = element.querySelector('input');
+      const knob = element.querySelector('span');
+      input.addEventListener('change', () => {
+        knob.style.transform = input.checked ? 'translateX(100%)' : 'translateX(0)';
+      });
+    }
+  },
+
+  // Alert Component
+  Alert: {
+    template: (props = {}) => `
+          <div class="neo-brutalist bg-${props.type === 'error' ? 'red-500' : 'green-500'} text-white p-4 flex justify-between items-center">
+            <span class="text-lg">${props.message || 'This is an alert!'}</span>
+            <button class="text-2xl font-bold">×</button>
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Alert.template(props);
+      const closeBtn = element.querySelector('button');
+      closeBtn.addEventListener('click', () => element.remove());
+    }
+  },
+
+  // Modal Component
+  Modal: {
+    template: (props = {}) => `
+          <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="neo-brutalist bg-white p-8 max-w-md w-full mx-4">
+              <h3 class="text-3xl mb-4">${props.title || 'Modal Title'}</h3>
+              <p class="text-base mb-6">${props.content || 'This is a Neo Brutalist modal.'}</p>
+              <button class="neo-brutalist bg-yellow-400 text-black text-lg font-bold py-2 px-4">Close</button>
+            </div>
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Modal.template(props);
+      const modal = element.querySelector('div');
+      const closeBtn = element.querySelector('button');
+      closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+      element.open = () => modal.classList.remove('hidden');
+    }
+  },
+
+  // Navigation Component
+  Nav: {
+    template: (props = {}) => `
+          <nav class="neo-brutalist bg-black text-white p-4">
+            <ul class="flex flex-wrap gap-4 md:gap-6">
+              ${(props.links || ['Home', 'About', 'Contact']).map(link => `
+                <li><a href="#" class="text-lg font-bold hover:underline">${link}</a></li>
+              `).join('')}
+            </ul>
+          </nav>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Nav.template(props);
+    }
+  },
+
+  // Progress Bar Component
+  Progress: {
+    template: (props = {}) => `
+          <div class="neo-brutalist w-full bg-gray-300 h-6 overflow-hidden">
+            <div class="bg-${props.color || 'black'} h-full" style="width: ${props.value || 50}%"></div>
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Progress.template(props);
+    }
+  },
+
+  // Dropdown Component
+  Dropdown: {
+    template: (props = {}) => `
+          <div class="relative">
+            <button class="neo-brutalist bg-yellow-400 text-black text-lg font-bold py-3 px-6">
+              ${props.label || 'Select'}
+            </button>
+            <ul class="neo-brutalist absolute hidden bg-white w-full min-w-[200px] mt-2">
+              ${(props.options || ['Option 1', 'Option 2', 'Option 3']).map(option => `
+                <li><a href="#" class="block p-3 text-lg hover:bg-gray-200">${option}</a></li>
+              `).join('')}
+            </ul>
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Dropdown.template(props);
+      const button = element.querySelector('button');
+      const menu = element.querySelector('ul');
+      button.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+      document.addEventListener('click', (e) => {
+        if (!element.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      });
+    }
+  },
+
+  // Accordion Component
+  Accordion: {
+    template: (props = {}) => `
+          <div class="neo-brutalist bg-white">
+            ${(props.items || [
+              { title: 'Section 1', content: 'Content for section 1.' },
+              { title: 'Section 2', content: 'Content for section 2.' }
+            ]).map((item, index) => `
+              <div class="border-b-4 border-black">
+                <button class="w-full text-left p-4 text-xl font-bold flex justify-between items-center">
+                  ${item.title}
+                  <span class="text-2xl">${index === 0 ? '-' : '+'}</span>
+                </button>
+                <div class="${index === 0 ? '' : 'hidden'} p-4 text-base">
+                  ${item.content}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Accordion.template(props);
+      const buttons = element.querySelectorAll('button');
+      buttons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+          const content = button.nextElementSibling;
+          const isOpen = !content.classList.contains('hidden');
+          element.querySelectorAll('div:not(.neo-brutalist)').forEach((div) => div.classList.add('hidden'));
+          element.querySelectorAll('button span').forEach((span) => span.textContent = '+');
+          if (!isOpen) {
+            content.classList.remove('hidden');
+            button.querySelector('span').textContent = '-';
+          }
+        });
+      });
+    }
+  },
+
+  // Tooltip Component
+  Tooltip: {
+    template: (props = {}) => `
+          <div class="relative inline-block">
+            <span class="neo-brutalist bg-yellow-400 text-black text-lg font-bold py-1 px-3 cursor-pointer">
+              ${props.trigger || 'Hover Me'}
+            </span>
+            <div class="neo-brutalist absolute hidden bg-black text-white text-sm p-2 mt-2 w-48 z-10">
+              ${props.content || 'This is a Neo Brutalist tooltip.'}
+            </div>
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Tooltip.template(props);
+      const trigger = element.querySelector('span');
+      const tooltip = element.querySelector('div');
+      trigger.addEventListener('mouseenter', () => tooltip.classList.remove('hidden'));
+      trigger.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
+    }
+  },
+
+  // Avatar Component
+  Avatar: {
+    template: (props = {}) => `
+          <div class="neo-brutalist w-16 h-16 flex items-center justify-center bg-${props.bgColor || 'gray-300'} text-${props.textColor || 'black'} text-2xl font-bold">
+            ${props.image ? `<img src="${props.image}" alt="Avatar" class="w-full h-full object-cover">` : props.initials || 'JD'}
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Avatar.template(props);
+    }
+  },
+
+  // Badge Component
+  Badge: {
+    template: (props = {}) => `
+          <span class="neo-brutalist inline-block bg-${props.color || 'red-500'} text-${props.textColor || 'white'} text-sm font-bold py-1 px-3">
+            ${props.text || 'New'}
+          </span>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Badge.template(props);
+    }
+  },
+
+  // Tabs Component
+  Tabs: {
+    template: (props = {}) => `
+          <div class="neo-brutalist bg-white">
+            <div class="flex flex-wrap border-b-4 border-black">
+              ${(props.tabs || ['Tab 1', 'Tab 2', 'Tab 3']).map((tab, index) => `
+                <button class="p-3 text-base md:text-lg font-bold ${index === 0 ? 'bg-yellow-400 text-black' : 'bg-gray-200'}" data-tab="${index}">
+                  ${tab}
+                </button>
+              `).join('')}
+            </div>
+            <div class="p-4">
+              ${(props.contents || ['Content for Tab 1.', 'Content for Tab 2.', 'Content for Tab 3.']).map((content, index) => `
+                <div class="${index === 0 ? '' : 'hidden'}" data-content="${index}">
+                  ${content}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `,
+    init: (element, props) => {
+      element.innerHTML = ComponentRegistry.Tabs.template(props);
+      const buttons = element.querySelectorAll('button');
+      const contents = element.querySelectorAll('div[data-content]');
+      buttons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+          buttons.forEach((btn) => {
+            btn.classList.remove('bg-yellow-400', 'text-black');
+            btn.classList.add('bg-gray-200');
+          });
+          contents.forEach((content) => content.classList.add('hidden'));
+          button.classList.add('bg-yellow-400', 'text-black');
+          button.classList.remove('bg-gray-200');
+          contents[index].classList.remove('hidden');
+        });
+      });
+    }
+  }
+};
+
+// Initialize Components
+const componentsContainer = document.getElementById('components');
+
+// Render each component with a demo
+Object.keys(ComponentRegistry).forEach(componentName => {
+  const componentCard = document.createElement('div');
+  componentCard.className = 'component-card neo-brutalist bg-white';
+
+  const componentHeader = document.createElement('div');
+  componentHeader.className = 'border-b-4 border-black p-4 bg-gray-100';
+  componentHeader.innerHTML = `<h2 class="text-2xl font-bold">${componentName}</h2>`;
+
+  const componentPreview = document.createElement('div');
+  componentPreview.className = 'component-preview';
+
+  componentCard.appendChild(componentHeader);
+  componentCard.appendChild(componentPreview);
+  componentsContainer.appendChild(componentCard);
+
+  // Initialize component with sample props
+  if (componentName === 'Button') {
+    ComponentRegistry.Button.init(componentPreview, {
+      text: 'Neo Button',
+      color: 'yellow-400',
+      textColor: 'black'
+    });
+  } else if (componentName === 'Card') {
+    ComponentRegistry.Card.init(componentPreview, {
+      title: 'Sample Card',
+      content: 'A raw, functional Neo Brutalist card.'
+    });
+  } else if (componentName === 'Input') {
+    ComponentRegistry.Input.init(componentPreview, {
+      placeholder: 'Type here...',
+      type: 'text'
+    });
+  } else if (componentName === 'Toggle') {
+    ComponentRegistry.Toggle.init(componentPreview, {
+      label: 'Switch Me',
+      checked: false
+    });
+  } else if (componentName === 'Alert') {
+    ComponentRegistry.Alert.init(componentPreview, {
+      message: 'Success Alert!',
+      type: 'success'
+    });
+  } else if (componentName === 'Modal') {
+    ComponentRegistry.Modal.init(componentPreview, {
+      title: 'Neo Modal',
+      content: 'A stark, no-nonsense modal window.'
+    });
+    const openBtn = document.createElement('button');
+    openBtn.className = 'neo-brutalist bg-yellow-400 text-black text-lg font-bold py-2 px-4 mt-4';
+    openBtn.textContent = 'Open Modal';
+    openBtn.addEventListener('click', () => componentPreview.open());
+    componentPreview.appendChild(openBtn);
+  } else if (componentName === 'Nav') {
+    ComponentRegistry.Nav.init(componentPreview, {
+      links: ['Home', 'Services', 'Blog', 'Contact']
+    });
+  } else if (componentName === 'Progress') {
+    ComponentRegistry.Progress.init(componentPreview, {
+      value: 75,
+      color: 'black'
+    });
+  } else if (componentName === 'Dropdown') {
+    ComponentRegistry.Dropdown.init(componentPreview, {
+      label: 'Menu',
+      options: ['Item 1', 'Item 2', 'Item 3']
+    });
+  } else if (componentName === 'Accordion') {
+    ComponentRegistry.Accordion.init(componentPreview, {
+      items: [
+        { title: 'Section A', content: 'Details for section A.' },
+        { title: 'Section B', content: 'Details for section B.' }
+      ]
+    });
+  } else if (componentName === 'Tooltip') {
+    ComponentRegistry.Tooltip.init(componentPreview, {
+      trigger: 'Info',
+      content: 'This is a brutalist tooltip!'
+    });
+  } else if (componentName === 'Avatar') {
+    ComponentRegistry.Avatar.init(componentPreview, {
+      initials: 'AB',
+      bgColor: 'yellow-400',
+      textColor: 'black'
+    });
+  } else if (componentName === 'Badge') {
+    ComponentRegistry.Badge.init(componentPreview, {
+      text: 'Hot',
+      color: 'red-500',
+      textColor: 'white'
+    });
+  } else if (componentName === 'Tabs') {
+    ComponentRegistry.Tabs.init(componentPreview, {
+      tabs: ['Tab A', 'Tab B', 'Tab C'],
+      contents: ['Content for Tab A.', 'Content for Tab B.', 'Content for Tab C.']
+    });
+  }
+});
+  </script>
+

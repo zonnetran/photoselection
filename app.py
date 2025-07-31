@@ -5,6 +5,16 @@ import json
 from datetime import datetime
 import secrets
 
+# Try to import database dependencies
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    from dotenv import load_dotenv
+    load_dotenv()
+    DATABASE_AVAILABLE = True
+except ImportError:
+    DATABASE_AVAILABLE = False
+
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
@@ -13,24 +23,172 @@ GALLERY_FOLDER = 'static/galleries'
 SELECTIONS_FOLDER = 'selections'
 PASSWORDS_FILE = 'gallery_passwords.json'
 
-# Ensure directories exist
+# Database Configuration
+DATABASE_URL = os.getenv('DATABASE_URL') if DATABASE_AVAILABLE else None
+USE_DATABASE = DATABASE_URL is not None
+
+# Ensure directories exist for local mode
 os.makedirs(GALLERY_FOLDER, exist_ok=True)
 os.makedirs(SELECTIONS_FOLDER, exist_ok=True)
 
-def load_passwords():
-    if os.path.exists(PASSWORDS_FILE):
-        with open(PASSWORDS_FILE, 'r') as f:
-            return json.load(f)
-    return {}
+def get_db_connection():
+    if not USE_DATABASE:
+        return None
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        return conn
+    except:
+        return None
 
-def save_passwords(passwords):
+def init_db():
+    if not USE_DATABASE:
+        return
+    
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return
+            
+        cur = conn.cursor()
+        
+        # Create galleries table
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS galleries (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) UNIQUE NOT NULL,
+                password VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Create selections table
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS selections (
+                id SERIAL PRIMARY KEY,
+                gallery_name VARCHAR(255) NOT NULL,
+                selected_images JSON NOT NULL,
+                comments JSON,
+                admin_session_id VARCHAR(255),
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Database initialization failed: {e}")
+
+# Initialize database if available
+init_db()
+
+def load_passwords():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT name, password FROM galleries WHERE password IS NOT NULL")
+    galleries = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    return {gallery['name']: gallery['password'] for gallery in galleries}
+
+def save_single_gallery_password(gallery_name, password):
+    """Save a single gallery password to both systems"""
+    # Update JSON file
+    passwords = load_passwords()
+    if password:
+        passwords[gallery_name] = password
+    else:
+        passwords.pop(gallery_name, None)
+    
     with open(PASSWORDS_FILE, 'w') as f:
         json.dump(passwords, f, indent=2)
+    
+    # Update database if available
+    if USE_DATABASE:
+        try:
+            conn = get_db_connection()
+            if conn:
+                cur = conn.cursor()
+                if password:
+                    cur.execute('''
+                        INSERT INTO galleries (name, password) 
+                        VALUES (%s, %s) 
+                        ON CONFLICT (name) 
+                        DO UPDATE SET password = EXCLUDED.password
+                    ''', (gallery_name, password))
+                else:
+                    cur.execute('DELETE FROM galleries WHERE name = %s', (gallery_name,))
+                conn.commit()
+                cur.close()
+                conn.close()
+        except Exception as e:
+            print(f"Database update failed: {e}")
+
+def get_galleries():
+    """Get galleries from filesystem (works both locally and online)"""
+    try:
+        galleries = [d for d in os.listdir(GALLERY_FOLDER) if os.path.isdir(os.path.join(GALLERY_FOLDER, d))]
+        return galleries
+    except:
+        # If filesystem not available, try database
+        if USE_DATABASE:
+            try:
+                conn = get_db_connection()
+                if conn:
+                    cur = conn.cursor(cursor_factory=RealDictCursor)
+                    cur.execute("SELECT DISTINCT name FROM galleries ORDER BY created_at DESC")
+                    galleries = cur.fetchall()
+                    cur.close()
+                    conn.close()
+                    return [gallery['name'] for gallery in galleries]
+            except:
+                pass
+        return []
+
+
+
+def save_selection_data(selection_data):
+    """Save selection to both JSON file and database"""
+    gallery_name = selection_data['gallery_name']
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    
+    # Save to JSON file (local compatibility)
+    try:
+        filename = f"{gallery_name}_{timestamp}.json"
+        filepath = os.path.join(SELECTIONS_FOLDER, filename)
+        with open(filepath, 'w') as f:
+            json.dump(selection_data, f, indent=2)
+    except Exception as e:
+        print(f"JSON save failed: {e}")
+    
+    # Save to database if available
+    if USE_DATABASE:
+        try:
+            conn = get_db_connection()
+            if conn:
+                cur = conn.cursor()
+                cur.execute('''
+                    INSERT INTO selections (gallery_name, selected_images, comments, admin_session_id, timestamp)
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (
+                    selection_data['gallery_name'],
+                    json.dumps(selection_data['selected_images']),
+                    json.dumps(selection_data.get('comments', {})),
+                    selection_data.get('admin_session_id'),
+                    datetime.fromisoformat(selection_data['timestamp'])
+                ))
+                conn.commit()
+                cur.close()
+                conn.close()
+        except Exception as e:
+            print(f"Database selection save failed: {e}")
 
 @app.route('/')
 def index():
-    galleries = [d for d in os.listdir(GALLERY_FOLDER) if os.path.isdir(os.path.join(GALLERY_FOLDER, d))]
-    return render_template('index.html', galleries=galleries)
+    galleries = get_galleries()
+    passwords = load_passwords()
+    return render_template('index.html', galleries=galleries, passwords=passwords)
 
 @app.route('/gallery/<gallery_name>')
 def gallery_login(gallery_name):
@@ -97,15 +255,10 @@ def submit_selection():
         'selected_images': selections,
         'comments': comments,
         'total_selected': len(selections),
-        'admin_session_id': session.get('admin_session_id')  # Track which admin session
+        'admin_session_id': session.get('admin_session_id')
     }
     
-    filename = f"{gallery_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    filepath = os.path.join(SELECTIONS_FOLDER, filename)
-    
-    with open(filepath, 'w') as f:
-        json.dump(selection_data, f, indent=2)
-    
+    save_selection_data(selection_data)
     return jsonify({'success': True, 'message': 'Selection saved successfully!'})
 
 @app.route('/static/galleries/<gallery_name>/<filename>')
@@ -138,7 +291,7 @@ def admin_dashboard():
     
     current_session_id = session['admin_session_id']
     
-    galleries = [d for d in os.listdir(GALLERY_FOLDER) if os.path.isdir(os.path.join(GALLERY_FOLDER, d))]
+    galleries = get_galleries()
     passwords = load_passwords()
     
     # Get gallery stats
@@ -179,17 +332,22 @@ def admin_create_gallery():
     if not gallery_name:
         return jsonify({'success': False, 'message': 'Gallery name required'})
     
-    # Create gallery directory
-    gallery_path = os.path.join(GALLERY_FOLDER, gallery_name)
-    os.makedirs(gallery_path, exist_ok=True)
-    
-    # Set password if provided
-    if password:
-        passwords = load_passwords()
-        passwords[gallery_name] = password
-        save_passwords(passwords)
-    
-    return jsonify({'success': True, 'message': f'Gallery "{gallery_name}" created successfully'})
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('''
+            INSERT INTO galleries (name, password) 
+            VALUES (%s, %s)
+        ''', (gallery_name, password))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': f'Gallery "{gallery_name}" created successfully'})
+    except psycopg2.IntegrityError:
+        return jsonify({'success': False, 'message': 'Gallery already exists'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Database error: {str(e)}'})
 
 @app.route('/admin/logout')
 def admin_logout():
@@ -271,7 +429,7 @@ def admin_delete_image(gallery_name, filename):
         os.remove(image_path)
         return jsonify({'success': True, 'message': f'Image "{filename}" deleted successfully'})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'Failed to delete image: {str(e)}'})
+        return jsonify({'success': False, 'message': f'Failed to delete image: {str(e)}')
 
 @app.route('/admin/manage_gallery/<gallery_name>')
 def admin_manage_gallery(gallery_name):
@@ -292,25 +450,19 @@ def admin_delete_gallery(gallery_name):
     if not session.get('admin_authenticated'):
         return jsonify({'success': False, 'message': 'Not authenticated'})
     
-    gallery_path = os.path.join(GALLERY_FOLDER, gallery_name)
-    
-    if not os.path.exists(gallery_path):
-        return jsonify({'success': False, 'message': 'Gallery not found'})
-    
     try:
-        # Remove all images in gallery
-        import shutil
-        shutil.rmtree(gallery_path)
+        # Remove directory if possible (local)
+        gallery_path = os.path.join(GALLERY_FOLDER, gallery_name)
+        if os.path.exists(gallery_path):
+            import shutil
+            shutil.rmtree(gallery_path)
         
-        # Remove password entry
-        passwords = load_passwords()
-        if gallery_name in passwords:
-            del passwords[gallery_name]
-            save_passwords(passwords)
+        # Remove password from both systems
+        save_single_gallery_password(gallery_name, None)
         
         return jsonify({'success': True, 'message': f'Gallery "{gallery_name}" deleted successfully'})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'Failed to delete gallery: {str(e)}'})
+        return jsonify({'success': False, 'message': f'Failed to delete gallery: {str(e)}')
 
 @app.route('/debug/session')
 def debug_session():
